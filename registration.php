@@ -1,4 +1,7 @@
 <?php
+
+    $errors = [];
+
     //condition qui contient  la logique de traitement du formulaire quand on reçoit une request POST
     if($_SERVER["REQUEST_METHOD"] === "POST") {
         
@@ -15,11 +18,38 @@
         $password1 = trim($password1);
         $password2 = trim($password2);
 
-        if($password1 === $password2) {
-            echo "mot de passe validé.";
-        } else {
-            echo "mot de passe non validé.";
+        //validation des données
+
+        //valide username
+        //valide que le champ soit remplis
+        if(empty($userName)){
+            $errors[] = "nom obligatoire !";
+        } elseif (strlen($userName) < 3) {
+            $errors[] = "mini 3 carac";
+        //valide avec la fonction strlen si la string est de moins de 55 carac
+        } elseif (strlen($userName) > 55) {
+            $errors[] = "max 55 carac";
+        } 
+
+        //validation email
+        if (empty($email)){
+            $errors[] = "email obligatoire !";
+        } elseif(!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $errors[] = "votre adresse ne correspond pas au format mail classique";
         }
+
+        //validation password
+        if(empty($password1)) {
+            $errors[] = "Mot de passe obligatoire ";
+        } elseif (strlen($password1) < 3) {
+            $errors[] = "password trop juste.";
+            // normalement ici on met un pattern pour le mdp
+        } elseif ($password1 !== $password2) {
+            $errors[] = "mots de passe doivent être identiques.";
+        }
+
+
+        
 
     }
 
@@ -39,6 +69,13 @@
         <section>
         <h1>Registration</h1>
             <form action="#" method="POST">
+                
+                <?php
+                    foreach($errors as $error){
+                        echo "<div>" . $error . "</div>";
+                    }
+                ?>
+
                 <div>
                     <label for="name">Nom</label>
                     <input type="text" id="name" name="name" placeholder="Nom" required/>
