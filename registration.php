@@ -1,5 +1,7 @@
 <?php
 
+    require_once 'config/database.php';
+
     $errors = [];
 
     //condition qui contient  la logique de traitement du formulaire quand on reçoit une request POST
@@ -48,7 +50,7 @@
             $errors[] = "mots de passe doivent être identiques.";
         }
 
-
+        //SELECT * FROM users WHERE email = 'jean@gmail.com';
 
     }
 
