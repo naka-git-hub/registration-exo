@@ -1,24 +1,23 @@
 <?php
 
-//information pour se connecter
-//l'endroit ou est ma database
-$host = "localhost";
-//le nom de la db
-$dbname = "users";
-//identifiant de connexion
-$username = "root";
-//mdp de connexion
-$password = "";
-//port
-$port = 3306;
-//encodage
-$charset = "utf8mb4";
+// logique de connexion a la database
 
 //fonction qui crée et renvoi une connexion à la db
 function dbConnexion(){
 
-    //trandforme mes variable en global (accessible partout)
-    global $host, $dbname, $password, $username, $port, $charset;
+    //information pour se connecter
+    //l'endroit ou est ma database
+    $host = "localhost";
+    //le nom de la db
+    $dbname = "users";
+    //identifiant de connexion
+    $username = "root";
+    //mdp de connexion
+    $password = "";
+    //port
+    $port = 3306;
+    //encodage
+    $charset = "utf8mb4";
 
     try {
         //DSN est le nom de la source de données contenant$
@@ -29,6 +28,7 @@ function dbConnexion(){
         //comment me renvoyer les données
         $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
 
+        //var_dump($pdo);
         return $pdo;
 
 
@@ -38,3 +38,4 @@ function dbConnexion(){
 
 }
 
+//var_dump(dbConnexion());

@@ -1,5 +1,14 @@
 <?php
 
+    //Form en HTML
+    // mail et mb_preferred_mime_name
+    // Si on reçoit du post : 
+    // 1 traite les données
+    // 2 on vérifie si l'adresse existe
+    // 3 gestion des errors
+    // 4 Si elle existe on vérifie si le mdp est le bon
+    // 5 on s'arrête pour l'instant
+
     require_once 'config/database.php';
 
     $errors = [];
@@ -8,30 +17,15 @@
     if($_SERVER["REQUEST_METHOD"] === "POST") {
         
         //récupération des données du formulaire
-        $userName = $_POST["name"] ?? '';
         $email = $_POST["email"] ?? '';
-        $password1 = $_POST["password1"] ?? '';
-        $password2 = $_POST["password2"] ?? '';
+        $password = $_POST["password"] ?? '';
 
-        var_dump($userName, $email, $password1, $password2);
+        var_dump($email, $password);
 
-        $userName = htmlspecialchars(trim($userName));
         $email = htmlspecialchars(trim($email));
-        $password1 = trim($password1);
-        $password2 = trim($password2);
+        $password = trim($password);
 
         //validation des données
-
-        //valide username
-        //valide que le champ soit remplis
-        if(empty($userName)){
-            $errors[] = "nom obligatoire !";
-        } elseif (strlen($userName) < 3) {
-            $errors[] = "mini 3 carac";
-        //valide avec la fonction strlen si la string est de moins de 55 carac
-        } elseif (strlen($userName) > 55) {
-            $errors[] = "max 55 carac";
-        } 
 
         //validation email
         if (empty($email)){
@@ -41,13 +35,11 @@
         }
 
         //validation password
-        if(empty($password1)) {
+        if(empty($password)) {
             $errors[] = "Mot de passe obligatoire ";
-        } elseif (strlen($password1) < 3) {
+        } elseif (strlen($password) < 3) {
             $errors[] = "password trop juste.";
             // normalement ici on met un pattern pour le mdp
-        } elseif ($password1 !== $password2) {
-            $errors[] = "mots de passe doivent être identiques.";
         }
 
         if(empty($errors)) {
@@ -61,23 +53,27 @@
             //la methode execute de mon objet pdo execute la request préparée
             $checkEmail->execute([$email]);
 
-            //une condition pour vérifier si je recupere quelque chose
-            if ($checkEmail->rowCount() > 0) {
-                $errors[] = "email déja utilisé";
+            //une condition pour vérfier i je recupere quelque chose
+            if ($checkEmail->rowCount() === 0) {
+                $errors[] = "email n'existe pas";
             } else {
-                //dans le cas ou tout va bien ! email pas utilisé
+                
+                //Nous utilisons une requête SELECT afin d'avoir le mot de passe correspondant à l'email existant
+                $checkPassword = $pdo->prepare("SELECT password FROM users WHERE email = ?");
+                
+                //Nous exécutons la requête SELECT
+                $checkPassword->execute([$email]);
 
-                //hashage du mdp
-                $hashPassword = password_hash($password1, PASSWORD_DEFAULT);
+                //La méthode fetch retourne les lignes dans un tableau indexé par le nom des colonnes
+                $result = $checkPassword->fetch(PDO::FETCH_ASSOC);
 
-                var_dump($hashPassword);
-
-                //Insérer les données en base  de données
-                $insertUser = $pdo->prepare("INSERT INTO users (name, email, password) VALUES (?, ?, ?)");
-
-                $insertUser->execute([$userName, $email, $hashPassword]);
-
-                $message = "super mega cool vous êtes enregistré $userName";
+                //var_dump($result['password']);
+                //une condition pour vérifier si le mot de passe est bon
+                if(password_verify($password, $result['password'])) {
+                    $message = "super mega cool votre email existe et le mot de passe est bon";    
+                } else {
+                    $errors[] = "le mot de passe n'est pas bon";
+                }
 
             }
 
@@ -107,7 +103,7 @@
 <body>
     <main>
         <section>
-        <h1>Registration</h1>
+        <h1>Login</h1>
             <form action="#" method="POST">
                 
                 <?php
@@ -121,20 +117,12 @@
                 ?>
 
                 <div>
-                    <label for="name">Nom</label>
-                    <input type="text" id="name" name="name" placeholder="Nom" required/>
-                </div>
-                <div>
                     <label for="email">Email</label>
                     <input type="email" id="email" name="email" placeholder="Email" required/>
                 </div>
                 <div>
-                    <label for="password1">Mot de passe</label>
-                    <input type="password" id="password1" name="password1" placeholder="Mot de passe" required/>
-                </div>
-                <div>
-                    <label for="password2">Confirmer le mot de passe</label>
-                    <input type="password" id="password2" name="password2" placeholder="Confirmer le mot de passe" required/>
+                    <label for="password">Mot de passe</label>
+                    <input type="password" id="password" name="password" placeholder="Mot de passe" required/>
                 </div>
                 <div>
                     <input type="submit" value="Valider" />
@@ -142,5 +130,8 @@
             </form>
         </section>
     </main>
+
 </body>
 </html>
+
+
